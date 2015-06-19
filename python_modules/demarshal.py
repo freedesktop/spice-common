@@ -346,13 +346,12 @@ def write_validate_array_item(writer, container, item, scope, parent_scope, star
         rows = array.size[3]
         width_v = write_read_primitive(writer, start, container, width, scope)
         rows_v = write_read_primitive(writer, start, container, rows, scope)
-        # TODO: Handle multiplication overflow
         if bpp == 8:
-            writer.assign(nelements, "%s * %s" % (width_v, rows_v))
+            writer.assign(nelements, "(uint64_t) %s * %s" % (width_v, rows_v))
         elif bpp == 1:
-            writer.assign(nelements, "((%s + 7) / 8 ) * %s" % (width_v, rows_v))
+            writer.assign(nelements, "(((uint64_t) %s + 7U) / 8U ) * %s" % (width_v, rows_v))
         else:
-            writer.assign(nelements, "((%s * %s + 7) / 8 ) * %s" % (bpp, width_v, rows_v))
+            writer.assign(nelements, "((%sU * (uint64_t) %s + 7U) / 8U ) * %s" % (bpp, width_v, rows_v))
     elif array.is_bytes_length():
         is_byte_size = True
         v = write_read_primitive(writer, start, container, array.size[1], scope)
@@ -713,13 +712,12 @@ def read_array_len(writer, prefix, array, dest, scope, is_ptr):
         rows = array.size[3]
         width_v = dest.get_ref(width)
         rows_v = dest.get_ref(rows)
-        # TODO: Handle multiplication overflow
         if bpp == 8:
-            writer.assign(nelements, "%s * %s" % (width_v, rows_v))
+            writer.assign(nelements, "((uint64_t) %s * %s)" % (width_v, rows_v))
         elif bpp == 1:
-            writer.assign(nelements, "((%s + 7) / 8 ) * %s" % (width_v, rows_v))
+            writer.assign(nelements, "(((uint64_t) %s + 7U) / 8U ) * %s" % (width_v, rows_v))
         else:
-            writer.assign(nelements, "((%s * %s + 7) / 8 ) * %s" % (bpp, width_v, rows_v))
+            writer.assign(nelements, "((%sU * (uint64_t) %s + 7U) / 8U ) * %s" % (bpp, width_v, rows_v))
     elif array.is_bytes_length():
         writer.assign(nelements, dest.get_ref(array.size[2]))
     else:
